@@ -1,0 +1,286 @@
+package newCastle;
+
+import java.util.HashMap;
+import java.util.Scanner;
+
+
+public class Game {
+	Scanner in = new Scanner(System.in);
+    private Room currentRoom;
+    private HashMap<String,Handler> handlers = new HashMap<String,Handler>();
+    private int HP;
+    private int wealth;
+    
+    class Handler{
+        public void doCmd(String word){
+    		
+    	}
+    	public boolean isBye(){return false;}
+
+    }
+        
+    public Game() 
+    {
+    	HP = 10;
+    	wealth = 0;
+    	
+    	handlers.put("go", new Handler(){
+    		public void doCmd(String word) {
+    			goRoom(word);
+    		}
+    		public String toString(){
+    			return "选择前进的方向，如： go east";
+    		}
+    	});
+    	
+    	handlers.put("eat", new Handler(){
+    		public void doCmd(String s){
+    			eatFood(s);
+    		}
+    		public String toString(){
+    			return "吃掉房间里的部分或全部食物，如： eat 3";
+    		}
+    	});
+    	
+    	handlers.put("take", new Handler(){
+    		public void doCmd(String s){
+    			takeTreasures(s);
+    		}
+    		public String toString(){
+    			return "拿上房间里的部分或全部宝箱，如： take 2";
+    		}
+    	});
+    	
+    	handlers.put("0", new Handler(){
+    		public void doCmd(String number){
+    			newStart();
+    		}
+    		public String toString(){
+    			return "一切归零，重新开始，fighting!";
+    		}
+    	});
+    	
+    	handlers.put("bye", new Handler(){
+    		public boolean isBye() {
+    			return true;
+    		}
+    		public String toString(){
+    			return "残忍的退出游戏∏_∏";
+    		}
+    	});
+    	handlers.put("help", new Handler(){
+    		public void doCmd(String word) {
+    			 System.out.println("迷路了吗？你可以做的命令:");
+    			 for (String s : handlers.keySet())
+    			 {
+    				 System.out.println(s+": "+handlers.get(s));
+    			 }
+    		}
+    		public String toString(){
+    			return "再次查看本说明";
+    		}
+    	});
+        createRooms();
+    }
+
+    private void createRooms()
+    {
+        Room outside, lobby, bedroom, lounge, kitchen, storeroom, balcony,
+        secretChamber_No1, secretChamber_No2, secretChamber_No3;
+      
+        //	制造房间，初始化食物和宝藏
+        outside = new Room("大门口", 0, 0);
+        lobby = new Room("大堂", 5, 0);
+        bedroom = new Room("卧室", 0, 1);
+        lounge = new Room("客厅", 10, 0);
+        kitchen = new Room("厨房", 20, 0);
+        storeroom = new Room("储物间", 10, 0);
+        balcony = new Room("阳台", 10, 0);
+        secretChamber_No1 = new Room("密室之一", 0, 5);
+        secretChamber_No2 = new Room("密室之二", 0, 1);
+        secretChamber_No3 = new Room("密室之三", 0, 1);
+        
+        //	初始化房间的出口
+        outside.setExit("east", lounge);
+        lobby.setExit("west", lounge);
+        lobby.setExit("east", secretChamber_No2);
+        lobby.setExit("down", secretChamber_No3);
+        lobby.setExit("north", bedroom);
+        bedroom.setExit("north", balcony);
+        bedroom.setExit("south", lobby);
+        bedroom.setExit("west", kitchen);
+        bedroom.setExit("down", secretChamber_No1);
+        lounge.setExit("north", kitchen);
+        lounge.setExit("west", outside);
+        lounge.setExit("east", lobby);
+        kitchen.setExit("north", storeroom);
+        kitchen.setExit("south", lounge);
+        kitchen.setExit("east", bedroom);
+        storeroom.setExit("south", kitchen);
+        storeroom.setExit("east", balcony);
+        balcony.setExit("south", bedroom);
+        balcony.setExit("west", storeroom);
+        secretChamber_No1.setExit("up", bedroom);
+        secretChamber_No2.setExit("west", lobby);
+        secretChamber_No3.setExit("up", lobby);
+
+        currentRoom = lobby;  //	从大厅开始
+    }
+
+    private void printWelcome() {
+        System.out.println();
+        System.out.println("欢迎来到‘鱼与熊掌的寻宝小游戏！");
+        System.out.println("这是一个贪心会很快死掉的世界！");
+        System.out.println("你有初始的10点体力，每移动一次消耗1点体力");
+        System.out.println("你可以在房间中找到宝箱，携带的每只宝箱会使移动消耗的体力+1");
+        System.out.println("你还可以在房间中找到食物，吃掉它们增加体力，每份食物会使体力+1");
+        System.out.println("不过体力值超过50会发生很尴尬的事情哟.....很可怕，不要尝试");
+        System.out.println("鱼与熊掌不可多得，看看你能带着多少只宝箱走出大门，解锁各种成就！");
+        System.out.println("tips:共有8只宝箱，最佳路线是剩余10点体力带出全部宝箱，加油！");
+        System.out.println("如果需要帮助，请输入 help");
+        System.out.println();
+        showPrompt();
+    }
+
+    // 以下为用户命令
+
+
+    public void goRoom(String direction) 
+    {
+        Room nextRoom = currentRoom.getExit(direction);
+               
+        if (nextRoom == null) {
+            System.out.println("那里没有门！");
+        }
+        
+        else {
+            currentRoom = nextRoom; 
+            HP = HP-1-wealth;
+            if (HP<=0){
+            	System.out.println("啊哦，你的体力耗尽，即将饿死，宝箱不能当饭吃啊亲");
+            	System.out.println("恭喜你解锁“人为财死”成就，撒小白花~");
+            	newStart();
+            }
+            else if(currentRoom.toString().equals("大门口")){
+            	System.out.println("找到出口！");
+            	System.out.println("你带出了"+wealth+"只宝箱，剩余"+HP+"点体力.");
+            	if (wealth == 8){
+            		System.out.println("恭喜你解锁“宝藏猎人”成就！撒大红花~");
+            	}
+            	else{
+            		System.out.println("且慢！这还不是最好的成绩，");
+            	} 
+            	System.out.println("再来一次，fighting!"); 
+            	newStart();
+            }
+            else{
+            	showPrompt();
+            }
+        }                                
+    }
+    
+    public void eatFood(String s){
+    	int food = 0;
+    	if (s==""){
+    		System.out.println("亲，请输入吃的份数~");
+    		food = in.nextInt();
+    	}
+    	else{
+    		food = Integer.parseInt(s);    		  	
+    	}
+    	if (food<=currentRoom.getFood()){
+    		currentRoom.setFood(currentRoom.getFood()-food);
+        	HP += food;  
+        	if (HP>50){
+        		System.out.println("啊哦，你吃了太多的食物，撑到走不了路....");
+        		System.out.println("恭喜你解锁“大肚佛”成就！");
+        		System.out.println("你被送上救护车，嘀嘟，嘀嘟，嘀嘟嘟....撒大白花~");
+        		System.out.println("再来一次，fighting!"); 
+        		newStart();
+        	}
+        	else{
+        		System.out.println("你当前的体力值变为:"+HP+".");
+        	}       		
+    	}
+    	else{
+    		System.out.println("没有那么多食物");
+    	}
+    }
+    
+    public void takeTreasures(String s){
+    	int treasure = 0;
+    	if (s==""){
+    		System.out.println("亲，请输入拿的数量~");
+    		treasure = in.nextInt();
+    	}
+    	else{
+    		treasure = Integer.parseInt(s);    		  	
+    	}
+    	if (currentRoom.getTreasures()>=treasure){
+    		currentRoom.setTreasures(currentRoom.getTreasures()-treasure);
+        	wealth += treasure;
+        	System.out.println("你当前拥有宝箱:"+wealth+"只.");
+    	}
+    	else{
+    		System.out.println("没有那么多宝箱");
+    	}    	    			
+    }
+    
+    public void newStart(){
+    	HP = 10;
+    	wealth = 0;
+    	createRooms();		
+		System.out.println("******我是新游戏的分割线******"); 
+    	showPrompt();   
+    }
+    
+    public void showPrompt(){
+    	 System.out.println("现在你在" + currentRoom);
+    	 if (currentRoom.getFood()>0)
+    	 {
+    		 System.out.println("发现"+currentRoom.getFood()+"份食物.");
+    	 }
+    	 if (currentRoom.getTreasures()>0)
+    	 {
+    		 System.out.println("发现"+currentRoom.getTreasures()+"只宝箱.");
+    	 }
+         System.out.print("出口有: ");
+         System.out.println(currentRoom.getExitDesc());
+         System.out.print("你当前体力值为"+HP+",拥有"+wealth+"只宝箱.");
+         System.out.println();
+         play();
+    }
+    
+    public void play(){
+//    	Scanner in = new Scanner(System.in);
+		while ( true ) {
+ 		String line = in.nextLine();
+ 		String[] words = line.split(" ");
+ 		Handler handler = handlers.get(words[0]);
+ 		String value = "";
+ 		if (words.length>1)
+ 		{
+ 			value = words[1];
+ 		}
+ 		if (handler != null)
+ 		{
+ 			handler.doCmd(value);
+ 			if (handler.isBye())
+ 			{
+ 				break;
+ 			}
+ 		}
+	  }
+    }
+	
+	
+	public static void main(String[] args) {
+		
+		Game game = new Game();
+		game.printWelcome();      
+        
+        System.out.println("挥泪再见，大爷下次再来啊~");
+//        in.close();
+	}
+
+}
