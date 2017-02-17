@@ -1,0 +1,58 @@
+package newCastle;
+
+import java.util.HashMap;
+
+public class Room {
+    private String description;
+    private HashMap<String, Room> exits = new HashMap<String, Room>();
+    private int food;
+    private int treasures;
+
+    public Room(String description, int food, int treasures) 
+    {
+        this.description = description;
+        this.food = food;
+        this.treasures = treasures;
+    }
+    
+    public void setExit(String dir, Room room){
+    	exits.put(dir, room);
+    }
+    
+    public void setFood(int food){
+    	this.food = food;
+    }
+    
+    public void setTreasures(int treasures){
+    	this.treasures = treasures;
+    }
+
+    @Override
+    public String toString()
+    {
+        return description;
+    }
+    
+    public String getExitDesc(){
+    	StringBuffer sb = new StringBuffer();
+    	for (String dir:exits.keySet())
+    	{
+    		sb.append(dir);
+    		sb.append(' ');
+    	}
+    	return sb.toString();
+    }
+    
+    public Room getExit(String direction){
+    	return exits.get(direction);
+    }
+    
+    public int getFood(){
+    	return food;
+    }
+    
+    public int getTreasures(){
+    	return treasures;
+    }
+    
+}
