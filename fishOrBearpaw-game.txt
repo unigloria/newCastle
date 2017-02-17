@@ -15,7 +15,7 @@ public class Game {
         public void doCmd(String word){
     		
     	}
-    	public boolean isBye(){return false;}
+    	
 
     }
         
@@ -61,8 +61,9 @@ public class Game {
     	});
     	
     	handlers.put("bye", new Handler(){
-    		public boolean isBye() {
-    			return true;
+    		public void doCmd(String s){
+    			System.out.println("挥泪再见，大爷下次再来啊~");
+				System.exit(0);
     		}
     		public String toString(){
     			return "残忍的退出游戏∏_∏";
@@ -264,11 +265,7 @@ public class Game {
  		}
  		if (handler != null)
  		{
- 			handler.doCmd(value);
- 			if (handler.isBye())
- 			{
- 				break;
- 			}
+ 			handler.doCmd(value); 			
  		}
 	  }
     }
@@ -279,7 +276,7 @@ public class Game {
 		Game game = new Game();
 		game.printWelcome();      
         
-        System.out.println("挥泪再见，大爷下次再来啊~");
+//      System.out.println("挥泪再见，大爷下次再来啊~");
 //        in.close();
 	}
 
